@@ -36,7 +36,7 @@ typedef Array<double, 1> blitz1Djet;
 
 //Data taken from http://ssd.jpl.nasa.gov
 //Saturn GM value (km^3s^-2) is M_Sa = 37,931,207.7
-#define M_Su  3498.754931 //(http://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html)
+//#define M_Su  3498.754931 //(http://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html)
 #define M_Sa  1.0
 #define M_Pr  2.83144e-10 //Prometheus mass (in Saturn masses) calculated from data in http://ssd.jpl.nasa.gov/?sat_phys_par
 #define M_Pa  2.43599e-10 //Pandora  mass (in Saturn masses) calculated from data in http://ssd.jpl.nasa.gov/?sat_phys_par
@@ -47,6 +47,7 @@ typedef Array<double, 1> blitz1Djet;
 #define a_Pr 2.313483 // Prometheus's semimajor axis
 #define a_Pa 2.352990 // Pandora's semimajor axis
 #define a_F 2.320070 // F ring's axis
+
 #define e_Sa 0.0565 // Saturn eccentricity wrt Sun (http://nssdc.gsfc.nasa.gov/planetary/factsheet/saturnfact.html)
 #define e_Ti 0.0288           // Titan eccentricity
 #define e_Pr 0.0022          // Prometheus eccentricity
@@ -62,7 +63,7 @@ typedef Array<double, 1> blitz1Djet;
 #define e_RP_MAX 0.01
 
 //number of MASSIVE particles, including test particle it's +1
-#define numberOfParticles 5
+#define numberOfParticles 4
 
 #define absoluteErrorDefinition 1.0e-20
 #define relativeErrorDefinition 1.0e-20
@@ -73,14 +74,14 @@ typedef Array<double, 1> blitz1Djet;
 #define regulaFalsiTolerance 1.0e-14
 #define newtonRaphsonTolerance 1.0e-14
 
-#define myIndex 5
+#define myIndex 4
 
-#define index_su 0
-#define index_sa 1
-#define index_ti 2
-#define index_pr 3
-#define index_pa 4
-#define index_rp 5
+//#define index_su 0
+#define index_sa 0
+#define index_ti 1
+#define index_pr 2
+#define index_pa 3
+#define index_rp 4
 
 #define rho_i index_sa
 #define rho_j index_rp
@@ -135,7 +136,7 @@ int main () {
 
     if(rank==0){
         //std::cout << "rank = 0 :" << std::endl;
-		std::cout << "This is a Taylor method, MPI-parallelized, PR(N+1)BP simulation." << std::endl;
+		std::cout << "This is a Taylor method, MPI-parallelized, PR(" << numberOfParticles << "+1)BP simulation." << std::endl;
         std::cout << "Integrating " << numberOfInitialConditions << " orbits; T_Max/T_Pr~" << maxperiods << "." << std::endl;
 		std::cout << "Number of tasks: "<< numtasks <<"."<<std::endl;
 		std::cout << "macheps=std::numeric_limits<double>::epsilon()=" << std::numeric_limits<double>::epsilon() << std::endl;
@@ -199,15 +200,13 @@ int main () {
 
     unsigned periods=0;
 
-    int pr=2;
-    int pa=3;
+    int pr=index_pr;
+    int pa=index_pa;
 
     int mxi=rho_i;
     int mxj=rho_j;
 
     int coll=0;//collisions integer
-
-    //double tolerance = regulaFalsiTolerance; //Convergence criterion tolerance
 
 	double E0;
 	double L0;
@@ -295,7 +294,7 @@ int main () {
         blitz3Djet EX(maxOrder,N+1,N+1);
         blitz3Djet EY(maxOrder,N+1,N+1);
 
-        m=M_Su,M_Sa,M_Ti,M_Pr,M_Pa,0.;
+        m=M_Sa,M_Ti,M_Pr,M_Pa,0.;
 
         t=0.;
         delta_t=timeStep;
@@ -307,13 +306,6 @@ int main () {
         rd3 = ( 1.*rand() )/( 1.0*RAND_MAX );
         rd4 = ( 1.*rand() )/( 1.0*RAND_MAX );
 
-//        //Condiciones iniciales que generan singularidad en met de pos fals,
-//        //en variable m_...
-//        a_RP = 2.014977953797247;
-//        e_RP = 3.697961570554395e-05;
-//        theta_RP = 3.380896879419916;
-//        w_RP = 3.769077244345274;
-
         a_RP = a_RP_min+(a_RP_MAX-a_RP_min)*rd1;
         e_RP = e_RP_min+(e_RP_MAX-e_RP_min)*rd2;
         my_a=a_RP;
@@ -321,13 +313,14 @@ int main () {
         theta_RP = 360.*rd3;
         w_RP = 360.*rd4;
 
-        newInitialConditions(x,y,m,index_sa,index_su,a_Sa,e_Sa,0.,0.);
+        x(0,0)=0.;
+        y(0,0)=0.;
+        x(1,0)=0.;
+        y(1,0)=0.;
+
         newInitialConditions(x,y,m,index_ti,index_sa,a_Ti,e_Ti,0.,0.);
         newInitialConditions(x,y,m,index_pr,index_sa,a_Pr,e_Pr,0.,0.);
         newInitialConditions(x,y,m,index_pa,index_sa,a_Pa,e_Pa,0.,0.);
-        //InitialConditions(x,y,m,1,a_Ti,e_Ti,0.,0.);
-        //InitialConditions(x,y,m,2,a_Pr,e_Pr,0.,0.);
-        //InitialConditions(x,y,m,3,a_Pa,e_Pa,0.,0.);
 
         x(0,0)=(-m(1)*x(0,1)-m(2)*x(0,2)-m(3)*x(0,3)-m(4)*x(0,4))/m(0);
         y(0,0)=(-m(1)*y(0,1)-m(2)*y(0,2)-m(3)*y(0,3)-m(4)*y(0,4))/m(0);
@@ -343,15 +336,15 @@ int main () {
 
         }
 
-        //std::cout << "x00=" << x(0,0) << std::endl;
-        //std::cout << "y00=" << y(0,0) << std::endl;
-        //std::cout << "u00=" << x(1,0) << std::endl;
-        //std::cout << "v00=" << y(1,0) << std::endl;
+        // std::cout << "x00=" << x(0,0) << std::endl;
+        // std::cout << "y00=" << y(0,0) << std::endl;
+        // std::cout << "u00=" << x(1,0) << std::endl;
+        // std::cout << "v00=" << y(1,0) << std::endl;
 
-//        x(0,0)=0.;
-//        y(0,0)=0.;
-//        x(1,0)=0.;
-//        y(1,0)=0.;
+        // x(0,0)=0.;
+        // y(0,0)=0.;
+        // x(1,0)=0.;
+        // y(1,0)=0.;
 
         E0 = Energy(N,x,y,m);
         L0 = AngularMomentum(N,x,y,m);
@@ -467,19 +460,15 @@ int main () {
                         ynew(0,4) << " " <<//27
                         xnew(1,4) << " " <<//28
                         ynew(1,4) << " " <<//29
-                        xnew(0,5) << " " <<//30
-                        ynew(0,5) << " " <<//31
-                        xnew(1,5) << " " <<//32
-                        ynew(1,5) << " " <<//33
-                        my_a << " " <<//34
-                        my_e << " " <<//35
-                        aNow << " " <<//36
-                        eNow << " " <<//37
-                        x_ini(0,index_rp) << " " <<//38
-                        y_ini(0,index_rp) << " " <<//39
-                        x_ini(1,index_rp) << " " <<//40
-                        y_ini(1,index_rp) << " " <<//41
-                        (Energy(N,ynew,xnew,m)-E0)/E0 <<//42
+                        my_a << " " <<//30
+                        my_e << " " <<//31
+                        aNow << " " <<//32
+                        eNow << " " <<//32
+                        x_ini(0,index_rp) << " " <<//34
+                        y_ini(0,index_rp) << " " <<//35
+                        x_ini(1,index_rp) << " " <<//36
+                        y_ini(1,index_rp) << " " <<//37
+                        (Energy(N,ynew,xnew,m)-E0)/E0 <<//38
                         std::endl;
 
                 break;
@@ -509,7 +498,7 @@ int main () {
 //			a_calc=a_calc-Gamma(E_calc,r_rel,a_calc);
 
 #ifdef FILE0
-            if(c==282){
+            // if(c==282){
 
 				energyNow=Energy(N,x,y,m);
 				angMomNow=AngularMomentum(N,x,y,m);
@@ -535,8 +524,6 @@ int main () {
                       << " " << y(0,3)
                       << " " << x(0,4)
                       << " " << y(0,4)
-                      << " " << x(0,5)
-                      << " " << y(0,5)
                       //<< " " << m(0)*x(0,0)+m(1)*x(0,1)+m(2)*x(0,2)+m(3)*x(0,3)+m(4)*x(0,4)
                       //<< " " << m(0)*y(0,0)+m(1)*y(0,1)+m(2)*y(0,2)+m(3)*y(0,3)+m(4)*y(0,4)
                       //<< std::endl;
@@ -545,7 +532,7 @@ int main () {
                       << " " << A(2,mxi,mxj)
                       << std::endl;
 
-            }
+            // }
 #endif
 
 			t_old=t;
@@ -733,10 +720,6 @@ int main () {
                         ynew(0,4) << " " <<//
                         xnew(1,4) << " " <<//
                         ynew(1,4) << " " <<//
-                        xnew(0,5) << " " <<//
-                        ynew(0,5) << " " <<//
-                        xnew(1,5) << " " <<//
-                        ynew(1,5) << " " <<//
                         my_a << " " <<//
                         my_e << " " <<//
                         aNow << " " <<//
@@ -806,18 +789,14 @@ int main () {
                             ynew(0,4) << " " <<//
                             xnew(1,4) << " " <<//
                             ynew(1,4) << " " <<//
-                            xnew(0,5) << " " <<//
-                            ynew(0,5) << " " <<//
-                            xnew(1,5) << " " <<//
-                            ynew(1,5) << " " <<//
                             my_a << " " <<//
                             my_e << " " <<//
                             aNow << " " <<//
                             eNow << " " <<//
-                            x_ini(0,index_rp) << " " <<//38
-                            y_ini(0,index_rp) << " " <<//39
-                            x_ini(1,index_rp) << " " <<//40
-                            y_ini(1,index_rp) << " " <<//41
+                            x_ini(0,index_rp) << " " <<//34
+                            y_ini(0,index_rp) << " " <<//35
+                            x_ini(1,index_rp) << " " <<//36
+                            y_ini(1,index_rp) << " " <<//37
                             (Energy(N,ynew,xnew,m)-E0)/E0 <<//
                             std::endl;
 
@@ -872,18 +851,14 @@ int main () {
                             ynew(0,4) << " " <<//
                             xnew(1,4) << " " <<//
                             ynew(1,4) << " " <<//
-                            xnew(0,5) << " " <<//
-                            ynew(0,5) << " " <<//
-                            xnew(1,5) << " " <<//
-                            ynew(1,5) << " " <<//
                             my_a << " " <<//
                             my_e << " " <<//
                             aNow << " " <<//
                             eNow << " " <<//
-                            x_ini(0,index_rp) << " " <<//38
-                            y_ini(0,index_rp) << " " <<//39
-                            x_ini(1,index_rp) << " " <<//40
-                            y_ini(1,index_rp) << " " <<//41
+                            x_ini(0,index_rp) << " " <<//34
+                            y_ini(0,index_rp) << " " <<//35
+                            x_ini(1,index_rp) << " " <<//36
+                            y_ini(1,index_rp) << " " <<//37
                             (Energy(N,ynew,xnew,m)-E0)/E0 <<//
                             std::endl;
 
@@ -940,18 +915,14 @@ int main () {
                             ynew(0,4) << " " <<//
                             xnew(1,4) << " " <<//
                             ynew(1,4) << " " <<//
-                            xnew(0,5) << " " <<//
-                            ynew(0,5) << " " <<//
-                            xnew(1,5) << " " <<//
-                            ynew(1,5) << " " <<//
                             my_a << " " <<//
                             my_e << " " <<//
                             aNow << " " <<//
                             eNow << " " <<//
-                            x_ini(0,index_rp) << " " <<//38
-                            y_ini(0,index_rp) << " " <<//39
-                            x_ini(1,index_rp) << " " <<//40
-                            y_ini(1,index_rp) << " " <<//41
+                            x_ini(0,index_rp) << " " <<//34
+                            y_ini(0,index_rp) << " " <<//35
+                            x_ini(1,index_rp) << " " <<//36
+                            y_ini(1,index_rp) << " " <<//37
                             (Energy(N,ynew,xnew,m)-E0)/E0 <<//
                             std::endl;
 
@@ -1008,18 +979,14 @@ int main () {
                             ynew(0,4) << " " <<//
                             xnew(1,4) << " " <<//
                             ynew(1,4) << " " <<//
-                            xnew(0,5) << " " <<//
-                            ynew(0,5) << " " <<//
-                            xnew(1,5) << " " <<//
-                            ynew(1,5) << " " <<//
                             my_a << " " <<//
                             my_e << " " <<//
                             aNow << " " <<//
                             eNow << " " <<//
-                            x_ini(0,index_rp) << " " <<//38
-                            y_ini(0,index_rp) << " " <<//39
-                            x_ini(1,index_rp) << " " <<//40
-                            y_ini(1,index_rp) << " " <<//41
+                            x_ini(0,index_rp) << " " <<//34
+                            y_ini(0,index_rp) << " " <<//35
+                            x_ini(1,index_rp) << " " <<//36
+                            y_ini(1,index_rp) << " " <<//37
                             (Energy(N,ynew,xnew,m)-E0)/E0 <<//
                             std::endl;
 

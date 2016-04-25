@@ -201,10 +201,10 @@ double Energy(int &N,
 
             double rij=sqrt(  ( x(0,i)-x(0,j) )*( x(0,i)-x(0,j) )+( y(0,i)-y(0,j) )*( y(0,i)-y(0,j) )  );
 
-            if (i==index_sa || j==index_sa) {
+            if (i==index_ur || j==index_ur) {
                 ans=ans-G*m(j)*m(i)*(1.+Lambda/(3.*rij*rij))/rij;
             }
-            else if(i!=index_sa && j!=index_sa) {
+            else if(i!=index_ur && j!=index_ur) {
                 ans=ans-G*m(j)*m(i)/rij;
             }
             else std::cout << "ERROR: Energy ERROR 1" << std::endl;
@@ -571,7 +571,7 @@ void TimeStepControl(int &n,
 
     };//end, if timeStepControlMethod == 1 || timeStepControlMethod == 2
 
-    //std::cout << "delta_t/tpr=" << delta_t/T_Pr << std::endl;
+    //std::cout << "delta_t/tpr=" << delta_t/T_Co << std::endl;
 
 }//end, TimeStepControl
 
@@ -612,7 +612,7 @@ void TaylorSeriesExpansion(int &n,
     ynew(1,0)=( -m(1)*ynew(1,1)-m(2)*ynew(1,2)-m(3)*ynew(1,3) )/m(0);
 
     //std::cout << "n=" << n << std::endl;
-    //std::cout << "delta_t/tpr=" << delta_t/T_Pr << std::endl;
+    //std::cout << "delta_t/tpr=" << delta_t/T_Co << std::endl;
 
 }//end, TaylorSeriesExpansion
 
@@ -697,7 +697,7 @@ void TaylorMethod(int &n,
                 A(order,i,j)=ans;
 
                 //(B;DX,DY when i==0);C -Jets calculation:
-                if(i==index_sa || j==index_sa){
+                if(i==index_ur || j==index_ur){
 
                     dns=A(0,i,j);
 
@@ -741,7 +741,7 @@ void TaylorMethod(int &n,
                     DY(order,i,j)= bns;
 
                 }//end, if i==0 true
-                else if(i!=index_sa || j!=index_sa){ //(B;DX,DY when i!=0)-Jets calculation
+                else if(i!=index_ur || j!=index_ur){ //(B;DX,DY when i!=0)-Jets calculation
 
                     dns=A(0,i,j);
 
@@ -798,10 +798,10 @@ void TaylorMethod(int &n,
 
     TimeStepControl(n,N,x,y,thisIsTrue,infNorm,absoluteError,relativeError,timeStepControlMethod,delta_t);
 
-    if( (t+delta_t)/T_Pr>=maxperiods ){
-        //std::cout << "ALMOST DONE!" << " t/T=" << t/T_Pr << std::endl;
+    if( (t+delta_t)/T_Co>=maxperiods ){
+        //std::cout << "ALMOST DONE!" << " t/T=" << t/T_Co << std::endl;
         double mymacheps=std::numeric_limits<double>::epsilon();
-        delta_t=((maxperiods*T_Pr)-t)*(1.0000001);
+        delta_t=((maxperiods*T_Co)-t)*(1.0000001);
 
     }
 

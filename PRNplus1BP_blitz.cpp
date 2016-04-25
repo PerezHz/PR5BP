@@ -13,7 +13,7 @@
 #define OBLATE
 
 #define numberOfPeriods 1000
-#define numberOfInitialConditions 1000
+#define numberOfInitialConditions 10
 
 #ifdef PARALLEL
 #include "mpi.h"
@@ -35,30 +35,29 @@ typedef Array<double, 2> blitz2Djet;
 typedef Array<double, 1> blitz1Djet;
 
 //Data taken from http://ssd.jpl.nasa.gov
-//Saturn GM value (km^3s^-2) is M_Sa = 37,931,207.7
 //#define M_Su  3498.754931 //(http://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html)
-#define M_Sa  1.0
-#define M_Pr  2.83144e-10 //Prometheus mass (in Saturn masses) calculated from data in http://ssd.jpl.nasa.gov/?sat_phys_par
-#define M_Pa  2.43599e-10 //Pandora  mass (in Saturn masses) calculated from data in http://ssd.jpl.nasa.gov/?sat_phys_par
-#define M_Ti  2.38827e-04 //Titan  mass (in Saturn masses) calculated from data in http://ssd.jpl.nasa.gov/?sat_phys_par
+#define M_Ur  1.0
+#define M_Co  5.17912E-10 //Prometheus mass (in Uranus masses) calculated from data in http://ssd.jpl.nasa.gov/?sat_phys_par
+#define M_Op  6.21494E-10 //Pandora  mass (in Uranus masses) calculated from data in http://ssd.jpl.nasa.gov/?sat_phys_par
+#define M_Ar  1.49158513E-05 //Titan  mass (in Uranus masses) calculated from data in http://ssd.jpl.nasa.gov/?sat_phys_par
 
-#define a_Sa 23785.922878 //Saturn semimajor axis wrt Sun (http://nssdc.gsfc.nasa.gov/planetary/factsheet/saturnfact.html)
-#define a_Ti 20.27386 // Titan semimajor axis (ssd.jpl.nasa.gov)
-#define a_Pr 2.313483 // Prometheus's semimajor axis
-#define a_Pa 2.352990 // Pandora's semimajor axis
-#define a_F 2.320070 // F ring's axis
+//#define a_Ur 23785.922878 //Uranus semimajor axis wrt Sun (http://nssdc.gsfc.nasa.gov/planetary/factsheet/Uranusfact.html)
+#define a_Ar 7.4689933096 // Titan semimajor axis (ssd.jpl.nasa.gov)
+#define a_Co 1.9484330373 // Prometheus's semimajor axis
+#define a_Op 2.1049336829 // Pandora's semimajor axis
+#define a_F 2.0012210963 // F ring's axis
 
-#define e_Sa 0.0565 // Saturn eccentricity wrt Sun (http://nssdc.gsfc.nasa.gov/planetary/factsheet/saturnfact.html)
-#define e_Ti 0.0288           // Titan eccentricity
-#define e_Pr 0.0022          // Prometheus eccentricity
-#define e_Pa 0.0042          // Pandora eccentricity
-#define e_F 0.0026          // F Ring eccentricity
+//#define e_Ur 0.0565 // Uranus eccentricity wrt Sun (http://nssdc.gsfc.nasa.gov/planetary/factsheet/Uranusfact.html)
+#define e_Ar 0.0012           // Titan eccentricity
+#define e_Co 0.0003          // Prometheus eccentricity
+#define e_Op 0.0099          // Pandora eccentricity
+#define e_F 0.0079          // F Ring eccentricity
 
-#define R_Hill_Pr 0.001053 //=27.712714/R_Ur (Km)
-#define R_Hill_Pa 0.001019 //=31.827807/R_Ur (Km)
+#define R_Hill_Co 0.001084918357 //=27.712714/R_Ur (Km)
+#define R_Hill_Op 0.001245499754 //=31.827807/R_Ur (Km)
 
-#define a_RP_min a_Pr //a_Pr-0.01;
-#define a_RP_MAX a_Pa //a_Pa+0.01;
+#define a_RP_min a_Co //a_Co-0.01;
+#define a_RP_MAX a_Op //a_Op+0.01;
 #define e_RP_min 0.0
 #define e_RP_MAX 0.01
 
@@ -77,27 +76,27 @@ typedef Array<double, 1> blitz1Djet;
 #define myIndex 4
 
 //#define index_su 0
-#define index_sa 0
-#define index_ti 1
+#define index_ur 0
+#define index_ar 1
 #define index_pr 2
 #define index_pa 3
 #define index_rp 4
 
-#define rho_i index_sa
+#define rho_i index_ur
 #define rho_j index_rp
 
 #define pi   3.141592653589793  //=atan(1.0)*4.0 Let pi=1 :P
-#define T_Pr 6.283185307179586  //Prometheus's period =2*pi
+#define T_Co 6.283185307179586  //Prometheus's period =2*pi
 
 #ifdef OBLATE
-    #define J2   0.01629071        //Jacobson, 2006, Gravity field of Saturnian System...
-    #define Lambda 0.024436065     //=1.5*J2
-    #define G   12.3259565 // <-with J2 //=a_Pr*a_Pr*a_Pr/((1.+M_Pr)*(1.+Lambda/(a_Pr*a_Pr))) //Universal Gravitation Constant
+    #define J2   0.0035107        //Jacobson, 2006, Gravity field of Uranian System...
+    #define Lambda 0.00526605     //=1.5*J2
 #else
 	#define J2   0.0              //spherical planet!
 	#define Lambda 0.0            //=1.5*J2
-    #define G    12.382234 // <-without J2 //=a_Pr*a_Pr*a_Pr/(1.+M_Pr) //Universal Gravitation Constant
 #endif
+
+double G = a_Co*a_Co*a_Co/((1.+M_Co)*(1.+Lambda/(a_Co*a_Co))); //Universal Gravitation Constant
 
 #include "PRNplus1BP_blitz.h"
 
@@ -137,14 +136,14 @@ int main () {
     if(rank==0){
         //std::cout << "rank = 0 :" << std::endl;
 		std::cout << "This is a Taylor method, MPI-parallelized, PR(" << numberOfParticles << "+1)BP simulation." << std::endl;
-        std::cout << "Integrating " << numberOfInitialConditions << " orbits; T_Max/T_Pr~" << maxperiods << "." << std::endl;
+        std::cout << "Integrating " << numberOfInitialConditions << " orbits; T_Max/T_Co~" << maxperiods << "." << std::endl;
 		std::cout << "Number of tasks: "<< numtasks <<"."<<std::endl;
 		std::cout << "macheps=std::numeric_limits<double>::epsilon()=" << std::numeric_limits<double>::epsilon() << std::endl;
 		std::cout << "J2    =" << J2     << std::endl;
 		std::cout << "Lambda=" << Lambda << std::endl;
 		std::cout << "G     =" << G      << std::endl;
-        std::cout << "Gval  =" << a_Pr*a_Pr*a_Pr/((1.+M_Pr)*(1.+Lambda/(a_Pr*a_Pr))) << std::endl;
-        //std::cout << "T_Pr=" << T_Pr << std::endl;
+        std::cout << "Gval  =" << a_Co*a_Co*a_Co/((1.+M_Co)*(1.+Lambda/(a_Co*a_Co))) << std::endl;
+        //std::cout << "T_Co=" << T_Co << std::endl;
         std::cout << "snap1=" << snapshots1 << std::endl;
         std::cout << "snap2=" << snapshots2 << std::endl;
         std::cout << "snap3=" << snapshots3 << std::endl;
@@ -294,7 +293,7 @@ int main () {
         blitz3Djet EX(maxOrder,N+1,N+1);
         blitz3Djet EY(maxOrder,N+1,N+1);
 
-        m=M_Sa,M_Ti,M_Pr,M_Pa,0.;
+        m=M_Ur,M_Ar,M_Co,M_Op,0.;
 
         t=0.;
         delta_t=timeStep;
@@ -318,9 +317,9 @@ int main () {
         x(1,0)=0.;
         y(1,0)=0.;
 
-        newInitialConditions(x,y,m,index_ti,index_sa,a_Ti,e_Ti,0.,0.);
-        newInitialConditions(x,y,m,index_pr,index_sa,a_Pr,e_Pr,0.,0.);
-        newInitialConditions(x,y,m,index_pa,index_sa,a_Pa,e_Pa,0.,0.);
+        newInitialConditions(x,y,m,index_ar,index_ur,a_Ar,e_Ar,0.,0.);
+        newInitialConditions(x,y,m,index_pr,index_ur,a_Co,e_Co,0.,0.);
+        newInitialConditions(x,y,m,index_pa,index_ur,a_Op,e_Op,0.,0.);
 
         x(0,0)=(-m(1)*x(0,1)-m(2)*x(0,2)-m(3)*x(0,3)-m(4)*x(0,4))/m(0);
         y(0,0)=(-m(1)*y(0,1)-m(2)*y(0,2)-m(3)*y(0,3)-m(4)*y(0,4))/m(0);
@@ -357,7 +356,7 @@ int main () {
 
         std::cout << "c=" << c << " rank=" << rank << ", SEED=" << tictac << " ";
 
-        newInitialConditions(x,y,m,index_rp,index_sa,a_RP,e_RP,theta_RP,w_RP);
+        newInitialConditions(x,y,m,index_rp,index_ur,a_RP,e_RP,theta_RP,w_RP);
         //InitialConditions(x,y,m,index_rp,a_RP,e_RP,theta_RP,w_RP);
 
         distPr=0.;
@@ -399,7 +398,7 @@ int main () {
 
         unsigned d;
 
-        for (d=0; t/T_Pr<=maxperiods+1 ; d++) {
+        for (d=0; t/T_Co<=maxperiods+1 ; d++) {
 
             //std::cout << "alright0" << std::endl;
             blitz2Djet xnew(maxOrder+1,N+1);
@@ -439,7 +438,7 @@ int main () {
                         ss_e << " " <<//6
                         vr_a << " " <<//7
                         vr_e << " " <<//8
-                        t/T_Pr     << " " <<//9
+                        t/T_Co     << " " <<//9
                         xnew(0,0) << " " <<//10
                         ynew(0,0) << " " <<//11
                         xnew(1,0) << " " <<//12
@@ -481,7 +480,7 @@ int main () {
 
             distPr=1.;
             distPa=1.;
-            r=radialDistance(xnew,ynew,index_rp,index_sa);//0.5*(a_Pr+a_Pa);
+            r=radialDistance(xnew,ynew,index_rp,index_ur);//0.5*(a_Co+a_Op);
 
             //std::cout << "alright" << std::endl;
 
@@ -503,11 +502,11 @@ int main () {
 				energyNow=Energy(N,x,y,m);
 				angMomNow=AngularMomentum(N,x,y,m);
 
-                File0 << t/T_Pr
+                File0 << t/T_Co
                       << " " << aNow
                       << " " << eNow
-                      << " " << semiMajorAxis(N,x,y,m,index_rp,index_sa)
-                      << " " << eccentricity(N,x,y,m,index_rp,index_sa)
+                      << " " << semiMajorAxis(N,x,y,m,index_rp,index_ur)
+                      << " " << eccentricity(N,x,y,m,index_rp,index_ur)
                       << " " << rminCount
                       << " " << rmaxCount
                       << " " << aMean
@@ -575,7 +574,7 @@ int main () {
                 }
 
                 ///*if(fabs(oneJetDotHornerSum(n,dtans,A_old,mxi,mxj))>newtonRaphsonTolerance)*/ std::cout << "A1_old=" << oneJetDotHornerSum(n,dtans,A_old,mxi,mxj) << ", c=" << c << ", d=" << d << ", rank=" << rank << std::endl;
-                //if (c==393 && d==magic) std::cout << "t*/dt=" << dtans/delta_t << ", A0=" << oneJetHornerSum(n,dtans,A_old,mxi,mxj) << ", A1=" << oneJetDotHornerSum(n,dtans,A_old,mxi,mxj) << ", A2=" << oneJetDotDotHornerSum(n,dtans,A_old,mxi,mxj) << ", t/T_Pr=" << t/T_Pr << std::endl;
+                //if (c==393 && d==magic) std::cout << "t*/dt=" << dtans/delta_t << ", A0=" << oneJetHornerSum(n,dtans,A_old,mxi,mxj) << ", A1=" << oneJetDotHornerSum(n,dtans,A_old,mxi,mxj) << ", A2=" << oneJetDotDotHornerSum(n,dtans,A_old,mxi,mxj) << ", t/T_Co=" << t/T_Co << std::endl;
                 //if (/*A_old(2,mxi,mxj)*/oneJetDotDotHornerSum(n,dtans,A_old,mxi,mxj)>0.){
                 if (A_old(1,mxi,mxj)<0. && A(1,mxi,mxj)>0.){
                     rmin= sqrt(oneJetHornerSum(n,dtans,A_old,mxi,mxj));
@@ -585,9 +584,9 @@ int main () {
                     if( isnan(rmin) || isinf(rmin) ){
 
                         std::cout << "ISMIN rmin=" << rmin << ", c=" << c << ", d=" << d << ", rank=" << rank << ", SEED=" << tictac << std::endl;
-                        std::cout << "t/T_Pr" << t/T_Pr << std::endl;
-                        std::cout << "distPr_div_rHill=" << distPr/R_Hill_Pr << std::endl;
-                        std::cout << "distPa_div_rHill=" << distPa/R_Hill_Pa << std::endl;
+                        std::cout << "t/T_Co" << t/T_Co << std::endl;
+                        std::cout << "distPr_div_rHill=" << distPr/R_Hill_Co << std::endl;
+                        std::cout << "distPa_div_rHill=" << distPa/R_Hill_Op << std::endl;
                         std::cout << "rmaxCount=" << rmaxCount << std::endl;
                         std::cout << "rminCount=" << rminCount << std::endl;
                         std::cout << "rminMean=" << aMean*(1.-eMean) << std::endl;
@@ -605,8 +604,8 @@ int main () {
                     if( isnan(rmax) || isinf(rmax) ){
 
                         std::cout << "ISMAX rmax=" << rmax << ", c=" << c << ", d=" << d << ", rank=" << rank << ", SEED=" << tictac << std::endl;
-                        std::cout << "distPr_div_rHill=" << distPr/R_Hill_Pr << std::endl;
-                        std::cout << "distPa_div_rHill=" << distPa/R_Hill_Pa << std::endl;
+                        std::cout << "distPr_div_rHill=" << distPr/R_Hill_Co << std::endl;
+                        std::cout << "distPa_div_rHill=" << distPa/R_Hill_Op << std::endl;
                         std::cout << "rmaxCount=" << rmaxCount << std::endl;
                         std::cout << "rminCount=" << rminCount << std::endl;
                         std::cout << "rminMean=" << aMean*(1.+eMean) << std::endl;
@@ -617,7 +616,7 @@ int main () {
                 }
                 else std::cout << "WARNING: NR ill condition" << std::endl;
 
-                /**/if(fabs((1.*rmaxCount)-(1.*rminCount))>1.)/**/ std::cout << "rMC=" << rmaxCount << ", rmC=" << rminCount << ", diff=" << fabs(1.*rmaxCount-1.*rminCount) << ", c=" << c << ", d=" << d << ", rank=" << rank << ", SEED=" << tictac << ", t/T=" << t/T_Pr << std::endl;
+                /**/if(fabs((1.*rmaxCount)-(1.*rminCount))>1.)/**/ std::cout << "rMC=" << rmaxCount << ", rmC=" << rminCount << ", diff=" << fabs(1.*rmaxCount-1.*rminCount) << ", c=" << c << ", d=" << d << ", rank=" << rank << ", SEED=" << tictac << ", t/T=" << t/T_Co << std::endl;
 
                 if ( rmaxCount==rminCount ) {
 
@@ -681,11 +680,11 @@ int main () {
             //std::cout << "alright3" << std::endl;
 
             //"Paint" particle if it enters Prometheus/Pandora Hill Sphere, or escapes the region between them:
-            if ( distPr <= R_Hill_Pr || distPa <= R_Hill_Pa  || r>a_Pa || r<a_Pr || isnan(xnew(0,index_rp)) || isinf(xnew(0,index_rp))) {
+            if ( distPr <= R_Hill_Co || distPa <= R_Hill_Op  || r>a_Op || r<a_Co || isnan(xnew(0,index_rp)) || isinf(xnew(0,index_rp))) {
 
                 //std::cout << "         *rank = " << rank << " : Pro Coll!" << std::endl;
-                //if (distPr <= R_Hill_Pr)        std::cout << "distPr/R_Hill_Pr="  << distPr/R_Hill_Pr  << std::endl;
-                //else if (distPa <= R_Hill_Pa)   std::cout << "distPa/R_Hill_Pa="  << distPa/R_Hill_Pa << std::endl;
+                //if (distPr <= R_Hill_Co)        std::cout << "distPr/R_Hill_Co="  << distPr/R_Hill_Co  << std::endl;
+                //else if (distPa <= R_Hill_Op)   std::cout << "distPa/R_Hill_Op="  << distPa/R_Hill_Op << std::endl;
                 //else                            std::cout << "*OUT OF BOUNDS* r=" << r << ", c=" << c << ", d=" << d << std::endl;
 
                 coll=1;
@@ -699,7 +698,7 @@ int main () {
                         eMean << " " <<//
                         aVariance << " " <<//
                         eVariance << " " <<//
-                        t/T_Pr     << " " <<//
+                        t/T_Co     << " " <<//
                         xnew(0,0) << " " <<//
                         ynew(0,0) << " " <<//
                         xnew(1,0) << " " <<//
@@ -736,7 +735,7 @@ int main () {
 			};
 
             //if (yPr1<0 && yPr2>0) {
-            if ( floor(t_old/T_Pr)<floor(t/T_Pr) ) {
+            if ( floor(t_old/T_Co)<floor(t/T_Co) ) {
                 periods++;
 
                 if (periods==snapshots1 && coll==0) {
@@ -768,7 +767,7 @@ int main () {
                             ss_e << " " <<//
                             vr_a << " " <<//
                             vr_e << " " <<//
-                            t/T_Pr     << " " <<//
+                            t/T_Co     << " " <<//
                             xnew(0,0) << " " <<//
                             ynew(0,0) << " " <<//
                             xnew(1,0) << " " <<//
@@ -830,7 +829,7 @@ int main () {
                             ss_e << " " <<//
                             vr_a << " " <<//
                             vr_e << " " <<//
-                            t/T_Pr     << " " <<//
+                            t/T_Co     << " " <<//
                             xnew(0,0) << " " <<//
                             ynew(0,0) << " " <<//
                             xnew(1,0) << " " <<//
@@ -894,7 +893,7 @@ int main () {
                             ss_e << " " <<//
                             vr_a << " " <<//
                             vr_e << " " <<//
-                            t/T_Pr     << " " <<//
+                            t/T_Co     << " " <<//
                             xnew(0,0) << " " <<//
                             ynew(0,0) << " " <<//
                             xnew(1,0) << " " <<//
@@ -958,7 +957,7 @@ int main () {
                             ss_e << " " <<//
                             vr_a << " " <<//
                             vr_e << " " <<//
-                            t/T_Pr     << " " <<//
+                            t/T_Co     << " " <<//
                             xnew(0,0) << " " <<//
                             ynew(0,0) << " " <<//
                             xnew(1,0) << " " <<//
@@ -996,7 +995,7 @@ int main () {
 
                 //std::cout << "periods=" << periods << std::endl;
 
-            }; //end, if floor(t_old/T_Pr)<floor(t/T_Pr)
+            }; //end, if floor(t_old/T_Co)<floor(t/T_Co)
 
             //std::cout << "alright4" << std::endl;
             x=xnew;
@@ -1007,7 +1006,7 @@ int main () {
 
         };//end, for d
 
-        std::cout << "t/T_Pr=" << t/T_Pr << ", d=" << d << std::endl;
+        std::cout << "t/T_Co=" << t/T_Co << ", d=" << d << std::endl;
         //if(c==numberOfInitialConditions)std::cout << "c=" << c << std::endl;
 
 #ifdef FILE0

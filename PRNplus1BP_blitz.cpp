@@ -12,8 +12,8 @@
 //#define FILE0
 #define OBLATE
 
-#define numberOfPeriods 1000
-#define numberOfInitialConditions 100
+#define numberOfPeriods 60000000
+#define numberOfInitialConditions 1000
 
 #ifdef PARALLEL
 #include "mpi.h"

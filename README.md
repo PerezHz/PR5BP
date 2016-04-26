@@ -5,6 +5,10 @@ moons of the epsilon ring), Ariel, and an ensemble of non-interacting particles.
 
 ## Usage @ Miztli
 
+First, load the `mpi` module
+
+`module load mpi`
+
 To compile at  Miztli, use
 
 `mpicxx -I $TMPU/<blitz-dir> -O2 -o <executable-file> PRNplus1BP_blitz.cpp`

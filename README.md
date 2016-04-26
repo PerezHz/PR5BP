@@ -7,8 +7,8 @@ moons of the epsilon ring), Ariel, and an ensemble of non-interacting particles.
 
 To compile at  Miztli, use
 
-`mpicxx -I $TMPU/<my-working-dir>/PR5BP/blitz-0.10 -O2 -o SF15T.o PRNplus1BP_blitz.cpp`
+`mpicxx -I $TMPU/<blitz-dir> -O2 -o <executable-file> PRNplus1BP_blitz.cpp`
 
 To submit a job at Miztli, use
 
-`bsub -oo salida -eo error -q q_8p_1h -n 8 mpirun ./SF15T.o`
+`bsub -oo <output-file> -eo <error-file> -q <queue-name> -n <number-of-processes> mpirun <executable-file>`

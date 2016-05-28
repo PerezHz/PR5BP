@@ -12,7 +12,7 @@
 //#define FILE0
 #define OBLATE
 
-#define numberOfPeriods 50000000
+#define numberOfPeriods 10000000
 #define numberOfInitialConditions 5
 
 #ifdef PARALLEL

@@ -13,7 +13,7 @@
 #define OBLATE
 
 #define numberOfPeriods 10000000
-#define numberOfInitialConditions 5
+#define numberOfInitialConditions 75
 
 #ifdef PARALLEL
 #include "mpi.h"
@@ -59,7 +59,7 @@ typedef Array<double, 1> blitz1Djet;
 #define a_RP_min a_Co //a_Co-0.01;
 #define a_RP_MAX a_Op //a_Op+0.01;
 #define e_RP_min 0.0
-#define e_RP_MAX 0.01
+#define e_RP_MAX 0.04
 
 //number of MASSIVE particles, including test particle it's +1
 #define numberOfParticles 4

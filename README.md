@@ -5,9 +5,10 @@ moons of the epsilon ring), Ariel, and an ensemble of non-interacting particles.
 
 ## Usage @ Miztli
 
-First, load the `mpi` module
+First, load the `mpi` and `blitz` modules
 
 `module load mpi`
+`module load blitz<TAB>`
 
 To compile at  Miztli, use
 

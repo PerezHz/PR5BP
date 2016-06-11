@@ -78,8 +78,8 @@ typedef Array<double, 1> blitz1Djet;
 //#define index_su 0
 #define index_ur 0
 #define index_ar 1
-#define index_pr 2
-#define index_pa 3
+#define index_co 2
+#define index_op 3
 #define index_rp 4
 
 #define rho_i index_ur
@@ -199,8 +199,8 @@ int main () {
 
     unsigned periods=0;
 
-    int pr=index_pr;
-    int pa=index_pa;
+    int pr=index_co;
+    int pa=index_op;
 
     int mxi=rho_i;
     int mxj=rho_j;
@@ -318,22 +318,13 @@ int main () {
         y(1,0)=0.;
 
         newInitialConditions(x,y,m,index_ar,index_ur,a_Ar,e_Ar,0.,0.);
-        newInitialConditions(x,y,m,index_pr,index_ur,a_Co,e_Co,0.,0.);
-        newInitialConditions(x,y,m,index_pa,index_ur,a_Op,e_Op,0.,0.);
+        newInitialConditions(x,y,m,index_co,index_ur,a_Co,e_Co,0.,0.);
+        newInitialConditions(x,y,m,index_op,index_ur,a_Op,e_Op,0.,0.);
 
-        x(0,0)=(-m(1)*x(0,1)-m(2)*x(0,2)-m(3)*x(0,3)-m(4)*x(0,4))/m(0);
-        y(0,0)=(-m(1)*y(0,1)-m(2)*y(0,2)-m(3)*y(0,3)-m(4)*y(0,4))/m(0);
-        x(1,0)=(-m(1)*x(1,1)-m(2)*x(1,2)-m(3)*x(1,3)-m(4)*x(1,4))/m(0);
-        y(1,0)=(-m(1)*y(1,1)-m(2)*y(1,2)-m(3)*y(1,3)-m(4)*y(1,4))/m(0);
-
-        for (int i=0;i<N+1;i++){
-
-            x_ini(0,i)=x(0,i);
-            y_ini(0,i)=y(0,i);
-            x_ini(1,i)=x(1,i);
-            y_ini(1,i)=y(1,i);
-
-        }
+        x(0,0)=(-m(1)*x(0,1)-m(2)*x(0,2)-m(3)*x(0,3))/m(0);
+        y(0,0)=(-m(1)*y(0,1)-m(2)*y(0,2)-m(3)*y(0,3))/m(0);
+        x(1,0)=(-m(1)*x(1,1)-m(2)*x(1,2)-m(3)*x(1,3))/m(0);
+        y(1,0)=(-m(1)*y(1,1)-m(2)*y(1,2)-m(3)*y(1,3))/m(0);
 
         // std::cout << "x00=" << x(0,0) << std::endl;
         // std::cout << "y00=" << y(0,0) << std::endl;
@@ -359,6 +350,15 @@ int main () {
         newInitialConditions(x,y,m,index_rp,index_ur,a_RP,e_RP,theta_RP,w_RP);
         //InitialConditions(x,y,m,index_rp,a_RP,e_RP,theta_RP,w_RP);
 
+        for (int i=0;i<N+1;i++){
+            
+            x_ini(0,i)=x(0,i);
+            y_ini(0,i)=y(0,i);
+            x_ini(1,i)=x(1,i);
+            y_ini(1,i)=y(1,i);
+            
+        }
+        
         distPr=0.;
         distPa=0.;
         //yPr1=0.;
